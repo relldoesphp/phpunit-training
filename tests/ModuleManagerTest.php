@@ -49,4 +49,15 @@ class ModuleManagerTest extends \PHPUnit_Framework_TestCase
         $result = ModuleManager::include_install($module);
         $this->markTestSkipped('Cannot test this logic since it is captured in 2nd condition');
     }
+
+    /**
+     * @covers ModuleManager::include_install
+     * @expectedException PHPUnit_Framework_Error
+     */
+    public function testTriggerErrorWhenInstallClassIsNotExtendingModuleInstall()
+    {
+        $module = 'IClient';
+        // This should trigger the USER_ERR
+        $result = ModuleManager::include_install($module);
+    }
 }

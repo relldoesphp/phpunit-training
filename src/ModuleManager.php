@@ -28,7 +28,7 @@ class ModuleManager {
         if(isset(self::$modules_install[$module_class_name])) return true;
         $path = self::get_module_dir_path($module_class_name);
         $file = self::get_module_file_name($module_class_name);
-        $full_path = 'modules/' . $path . '/' . $file . 'Install.php';
+        $full_path = __DIR__ . '/modules/' . $path . '/' . $file . 'Install.php';
         if (!file_exists($full_path)) return false;
         ob_start();
         $ret = require_once($full_path);
