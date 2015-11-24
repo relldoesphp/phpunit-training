@@ -14,12 +14,12 @@
   },
   "autoload": {
     "psr-4": {
-      "In2it\\Phpunit\\": "src/Phpunit"
+      "In2it\\Phpunit\\": "src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "In2it\\Test\\Phpunit\\": "tests/Phpunit"
+      "In2it\\Test\\Phpunit\\": "tests/"
     }
   }
 }
