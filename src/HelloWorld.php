@@ -6,8 +6,8 @@ namespace In2it\Phpunit;
 
 class HelloWorld
 {
-    public function sayHello()
+    public function sayHello($argument = 'World')
     {
-        return 'Hello World!';
+        return 'Hello ' . $argument . '!';
     }
 }

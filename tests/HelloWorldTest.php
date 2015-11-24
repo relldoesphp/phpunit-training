@@ -16,4 +16,13 @@ class HelloWorldTest extends \PHPUnit_Framework_TestCase
             $helloWorld->sayHello()
         );
     }
+
+    public function testMethodReturnsHelloWithGivenArgument()
+    {
+        $helloWorld = new HelloWorld();
+        $this->assertSame(
+            'Hello foo!',
+            $helloWorld->sayHello('foo')
+        );
+    }
 }
