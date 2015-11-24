@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<phpunit
+        bootstrap="./vendor/autoload.php"
+        colors="true">
+
+    <testsuites>
+        <testsuite name="PHPUnit Training Course">
+            <directory suffix=".php">./tests</directory>
+        </testsuite>
+    </testsuites>
+
+    <php>
+        <const name="_VALID_ACCESS" value="1"/>
+    </php>
+
+</phpunit>
