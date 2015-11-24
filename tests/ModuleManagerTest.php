@@ -38,4 +38,15 @@ class ModuleManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($result);
         $this->assertCount(0, ModuleManager::$modules_install);
     }
+
+    /**
+     * @covers ModuleManager::include_install
+     * @expectedException PHPUnit_Framework_Error
+     */
+    public function testTriggerErrorWhenInstallClassIsNotFound()
+    {
+        $module = 'EssClient';
+        // This should trigger the USER_ERR
+        $result = ModuleManager::include_install($module);
+    }
 }
