@@ -60,4 +60,15 @@ class ModuleManagerTest extends \PHPUnit_Framework_TestCase
         // This should trigger the USER_ERR
         $result = ModuleManager::include_install($module);
     }
+
+    /**
+     * @covers ModuleManager::include_install
+     */
+    public function testModuleManagerInstallsCompleteModules()
+    {
+        $module = 'Mail';
+        $result = ModuleManager::include_install($module);
+        $this->assertTrue($result);
+        $this->assertCount(1, ModuleManager::$modules_install);
+    }
 }
