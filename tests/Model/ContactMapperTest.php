@@ -3,133 +3,57 @@ namespace In2it\Test\Phpunit\Model;
 
 use In2it\Phpunit\Model\Contact;
 use In2it\Phpunit\Model\ContactMapper;
-use PHPUnit_Extensions_Database_DataSet_IDataSet;
-use PHPUnit_Extensions_Database_DB_IDatabaseConnection;
 
-class ContactMapperTest extends \PHPUnit_Extensions_Database_TestCase
+class ContactMapperTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @var \PDO The PHP Data Object
+     * @covers \In2it\Phpunit\Model\ContactMapper::fetchAll
      */
-    protected $pdo;
-
-    /**
-     * @inheritDoc
-     */
-    public function __construct()
+    public function testFetchingAllContacts()
     {
-        $pdo = new \PDO('sqlite::memory:');
-        $pdo->exec(file_get_contents(__DIR__ . '/../../data/db/ddl.sqlite.sql'));
-        $this->pdo = $pdo;
-    }
+        $testData = array (
+            array (
+                'contact_id' => 1,
+                'name'       => 'Foo',
+                'address'    => 'Foo Bar 123',
+                'zip'        => '12345',
+                'city'       => 'Baz',
+                'country'    => 'AN',
+                'email'      => 'foo@bar.baz',
+                'phone'      => '+1234567890',
+                'mobile'     => '+9876543210',
+            ),
+            array (
+                'contact_id' => 2,
+                'name'       => 'Tik',
+                'address'    => 'Tik Tak 456',
+                'zip'        => '1000',
+                'city'       => 'Tok',
+                'country'    => 'ZG',
+                'email'      => 'tik.tak@een.be',
+                'phone'      => '+1234567890',
+                'mobile'     => '+9876543210',
+            ),
+        );
+        // Let's mock our statements first
+        $pdoStmt = $this->getMockBuilder('\\PDOStatement')
+            ->setMethods(array ('fetchAll'))
+            ->getMock();
+        $pdoStmt->method('fetchAll')
+            ->will($this->returnValue($testData));
+        // Now we can mock PDO itself
+        $pdo = $this->getMockBuilder('\\PDO')
+            ->setConstructorArgs(array ('sqlite::memory:'))
+            ->setMethods(array ('prepare', 'fetchAll'))
+            ->getMock();
+        $pdo->method('prepare')
+            ->will($this->returnValue($pdoStmt));
 
-    /**
-     * Returns the test database connection.
-     *
-     * @return PHPUnit_Extensions_Database_DB_IDatabaseConnection
-     */
-    protected function getConnection()
-    {
-        return $this->createDefaultDBConnection($this->pdo, ':memory:');
-    }
-
-    /**
-     * Returns the test dataset.
-     *
-     * @return PHPUnit_Extensions_Database_DataSet_IDataSet
-     */
-    protected function getDataSet()
-    {
-        return $this->createFlatXMLDataSet(__DIR__ . '/_files/initial-dataset.xml');
-    }
-
-    /**
-     * Custom functionality to convert resultsets to XML DataSets to
-     * be used with DBUnit.
-     *
-     * @param array $data
-     * @param string $table
-     * @return \PHPUnit_Extensions_Database_DataSet_FlatXmlDataSet
-     */
-    protected function parseXmlDataSet($data, $table)
-    {
-        $filename = __DIR__ . '/_files/tmp-dataset.xml';
-
-        $xml = new \DOMDocument('1.0', 'UTF-8');
-        $datasetNode = $xml->createElement('dataset');
-
-        foreach ($data as $row) {
-            $entry = $xml->createElement($table);
-            foreach ($row as $key => $value) {
-                $entry->setAttribute($key, htmlentities($value, ENT_QUOTES, 'utf-8'));
-            }
-            $datasetNode->appendChild($entry);
-        }
-        $xml->appendChild($datasetNode);
-        $xml->save($filename);
-        $dataSet = $this->createFlatXMLDataSet($filename);
-        unlink ($filename);
-        return $dataSet;
-    }
-
-    /**
-     * @covers In2it\Phpunit\Model\ContactMapper::fetchAll
-     */
-    public function testFetchAllRowsFromContact()
-    {
-        // Let's count entries from our database
-        $expectedCount = $this->getConnection()->getRowCount('contact');
-
-        // Now we use our logic to retrieve the data from the database
-        $contactMapper = new ContactMapper($this->pdo);
+        // Ready to test the logic
+        $contactMapper = new ContactMapper($pdo);
         $result = $contactMapper->fetchAll();
-
-        // We verify we have the same row count
-        $actualCount = count($result);
-        $this->assertSame($expectedCount, $actualCount);
-
-        // Let's verify the data matches
-        $actualDataSet = $this->parseXMLDataSet($result, 'contact');
-        $expectedDataSet = $this->createFlatXMLDataSet(__DIR__ . '/_files/fetchall-dataset.xml');
-        $this->assertDataSetsEqual($expectedDataSet, $actualDataSet);
-    }
-
-    /**
-     * @covers \In2it\Phpunit\Model\ContactMapper::save
-     */
-    public function testContactCanBeAddedToDatabase()
-    {
-        $contact = new Contact();
-        $contact->setName('Luke Skywalker')
-            ->setAddress('41234 Speeder Road')
-            ->setCity('Mos Eisly')
-            ->setZip(2031432145)
-            ->setCountry('Tatooine')
-            ->setEmail('luke.skywalker@jedi.net')
-            ->setPhone(+121131231432341341)
-            ->setMobile(+12113123413999241);
-        $contactMapper = new ContactMapper($this->pdo);
-        $contactMapper->save($contact->toArray());
-
-        $actualDataSet = $this->getConnection()->createDataSet();
-        $expectedDataSet = $this->createFlatXMLDataSet(__DIR__ . '/_files/insert-dataset.xml');
-        $this->assertDataSetsEqual($expectedDataSet, $actualDataSet);
-    }
-
-    /**
-     * @covers \In2it\Phpunit\Model\ContactMapper::save
-     */
-    public function testContactCanBeUpdatedInDatabase()
-    {
-        $contactMapper = new ContactMapper($this->pdo);
-        $contactResult = $contactMapper->find(2);
-        $contact = new Contact($contactResult);
-        $contact->setName('Stefanie Aerts')
-            ->setEmail('aerts.stefanie@telenet.be');
-        $contactMapper->save($contact->toArray());
-
-        $actualDataSet = $this->getConnection()->createDataSet();
-        $expectedDataSet = $this->createFlatXMLDataSet(__DIR__ . '/_files/update-dataset.xml');
-        $this->assertDataSetsEqual($expectedDataSet, $actualDataSet);
+        $this->assertCount(2, $result);
+        $this->assertSame($testData[0], $result[0]);
+        $this->assertSame($testData[1], $result[1]);
     }
 }
