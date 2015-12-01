@@ -118,6 +118,7 @@ abstract class MapperAbstract
                     $sql .= ', ';
                 }
             }
+            $sql .= ' WHERE ' . $this->getPrimary() . ' = ' . $id;
         } else {
             $values = array_pad(array (), $fieldCount, '?');
             $sql = 'INSERT INTO ' . $this->getTable() . '('
