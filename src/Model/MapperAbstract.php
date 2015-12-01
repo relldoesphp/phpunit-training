@@ -94,7 +94,7 @@ abstract class MapperAbstract
     public function fetchAll($where = array ())
     {
         $stmt = $this->prepareStatement($where);
-        if (false === ($resultSet = $stmt->fetchAll())) {
+        if (false === ($resultSet = $stmt->fetchAll(\PDO::FETCH_ASSOC))) {
             throw new \RuntimeException('Can\'t prepare the request: ' . implode(' - ', $stmt->errorInfo()));
         }
         return $resultSet;
