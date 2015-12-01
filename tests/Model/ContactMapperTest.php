@@ -115,4 +115,21 @@ class ContactMapperTest extends \PHPUnit_Extensions_Database_TestCase
         $expectedDataSet = $this->createFlatXMLDataSet(__DIR__ . '/_files/insert-dataset.xml');
         $this->assertDataSetsEqual($expectedDataSet, $actualDataSet);
     }
+
+    /**
+     * @covers \In2it\Phpunit\Model\ContactMapper::save
+     */
+    public function testContactCanBeUpdatedInDatabase()
+    {
+        $contactMapper = new ContactMapper($this->pdo);
+        $contactResult = $contactMapper->find(2);
+        $contact = new Contact($contactResult);
+        $contact->setName('Stefanie Aerts')
+            ->setEmail('aerts.stefanie@telenet.be');
+        $contactMapper->save($contact->toArray());
+
+        $actualDataSet = $this->getConnection()->createDataSet();
+        $expectedDataSet = $this->createFlatXMLDataSet(__DIR__ . '/_files/update-dataset.xml');
+        $this->assertDataSetsEqual($expectedDataSet, $actualDataSet);
+    }
 }
