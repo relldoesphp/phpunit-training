@@ -94,6 +94,9 @@ class ContactMapperTest extends \PHPUnit_Extensions_Database_TestCase
         $this->assertDataSetsEqual($expectedDataSet, $actualDataSet);
     }
 
+    /**
+     * @covers \In2it\Phpunit\Model\ContactMapper::save
+     */
     public function testContactCanBeAddedToDatabase()
     {
         $contact = new Contact();
