@@ -1,60 +1,102 @@
 <?php
 namespace In2it\Test\Phpunit\Model;
 
+use Faker\Factory;
 use In2it\Phpunit\Model\Contact;
 use In2it\Phpunit\Model\ContactMapper;
 
 class ContactMapperTest extends \PHPUnit_Framework_TestCase
 {
     /**
+     * Generates random data collections to use in our application
+     *
+     * @param int $totalEntries
+     * @return array
+     */
+    protected function generateCollection($totalEntries = 0)
+    {
+        $faker = Factory::create();
+        $collection = array ();
+        for ($i = 0; $i < $totalEntries; $i++) {
+            $collection[] = array (
+                'contact_id' => $faker->randomDigitNotNull,
+                'name'       => $faker->name,
+                'address'    => $faker->address,
+                'zip'        => $faker->postcode,
+                'city'       => $faker->city,
+                'country'    => $faker->countryCode,
+                'email'      => $faker->email,
+                'phone'      => $faker->phoneNumber,
+                'mobile'     => $faker->phoneNumber,
+            );
+        }
+        return $collection;
+    }
+
+    /**
+     * Generates a single entry to use as contact
+     *
+     * @param bool|false $newEntry
+     * @return \stdClass
+     */
+    public function generateEntry($newEntry = false)
+    {
+        $faker = Factory::create();
+        $entry = new \stdClass();
+        $entry->contact_id = ($newEntry ? 0 : $faker->numberBetween(1, 200000));
+        $entry->name = $faker->name;
+        $entry->address = $faker->address;
+        $entry->zip = $faker->postcode;
+        $entry->city = $faker->city;
+        $entry->country = $faker->countryCode;
+        $entry->email = $faker->email;
+        $entry->phone = $faker->phoneNumber;
+        $entry->mobile = $faker->phoneNumber;
+        return $entry;
+    }
+
+    /**
+     * Generates a Mocked PDO Object that will prepare statements
+     * and returns given values.
+     *
+     * @param array $methodValues
+     * @return \PDO
+     */
+    protected function generateMockPDO(array $methodValues = array ())
+    {
+        $stmtMethods = array_keys($methodValues);
+        $pdoStmt = $this->getMockBuilder('\\PDOStatement')
+            ->setMethods($stmtMethods)
+            ->getMock();
+        foreach ($methodValues as $method => $value) {
+            $pdoStmt->method($method)
+                ->will($this->returnValue($value));
+        }
+        $pdo = $this->getMockBuilder('\\PDO')
+            ->setMethods(array ('prepare'))
+            ->setConstructorArgs(array ('sqlite::memory:'))
+            ->getMock();
+        $pdo->method('prepare')
+            ->will($this->returnValue($pdoStmt));
+        return $pdo;
+    }
+
+    /**
      * @covers \In2it\Phpunit\Model\ContactMapper::fetchAll
      */
     public function testFetchingAllContacts()
     {
-        $testData = array (
-            array (
-                'contact_id' => 1,
-                'name'       => 'Foo',
-                'address'    => 'Foo Bar 123',
-                'zip'        => '12345',
-                'city'       => 'Baz',
-                'country'    => 'AN',
-                'email'      => 'foo@bar.baz',
-                'phone'      => '+1234567890',
-                'mobile'     => '+9876543210',
-            ),
-            array (
-                'contact_id' => 2,
-                'name'       => 'Tik',
-                'address'    => 'Tik Tak 456',
-                'zip'        => '1000',
-                'city'       => 'Tok',
-                'country'    => 'ZG',
-                'email'      => 'tik.tak@een.be',
-                'phone'      => '+1234567890',
-                'mobile'     => '+9876543210',
-            ),
-        );
-        // Let's mock our statements first
-        $pdoStmt = $this->getMockBuilder('\\PDOStatement')
-            ->setMethods(array ('fetchAll'))
-            ->getMock();
-        $pdoStmt->method('fetchAll')
-            ->will($this->returnValue($testData));
-        // Now we can mock PDO itself
-        $pdo = $this->getMockBuilder('\\PDO')
-            ->setConstructorArgs(array ('sqlite::memory:'))
-            ->setMethods(array ('prepare', 'fetchAll'))
-            ->getMock();
-        $pdo->method('prepare')
-            ->will($this->returnValue($pdoStmt));
+        $dataCount = 4;
+        $testData = $this->generateCollection($dataCount);
+        $pdo = $this->generateMockPDO(array ('fetchAll' => $testData));
 
         // Ready to test the logic
         $contactMapper = new ContactMapper($pdo);
         $result = $contactMapper->fetchAll();
-        $this->assertCount(2, $result);
-        $this->assertSame($testData[0], $result[0]);
-        $this->assertSame($testData[1], $result[1]);
+        $this->assertCount($dataCount, $result);
+        for ($i = 0; $i < $dataCount; $i++) {
+            $this->assertSame($testData[$i], $result[$i]);
+        }
     }
 
     /**
@@ -62,28 +104,8 @@ class ContactMapperTest extends \PHPUnit_Framework_TestCase
      */
     public function testInsertingNewContact()
     {
-        $testData = new \stdClass();
-        $testData->contact_id = 1;
-        $testData->name = 'Foo';
-        $testData->address = 'Foo Bar 123';
-        $testData->zip = '12345';
-        $testData->city = 'Baz';
-        $testData->country = 'AN';
-        $testData->email = 'foo@bar.baz';
-        $testData->phone = '+1234567890';
-        $testData->mobile = '+9876543210';
-
-        $pdoStmt = $this->getMockBuilder('\\PDOStatement')
-            ->setMethods(array ('execute'))
-            ->getMock();
-        $pdoStmt->method('execute')
-            ->will($this->returnValue(true));
-        $pdo = $this->getMockBuilder('\\PDO')
-            ->setMethods(array ('prepare'))
-            ->setConstructorArgs(array ('sqlite::memory:'))
-            ->getMock();
-        $pdo->method('prepare')
-            ->will($this->returnValue($pdoStmt));
+        $testData = $this->generateEntry(true);
+        $pdo = $this->generateMockPDO(array ('execute' => true));
 
         $contact = new Contact($testData);
         $contactMapper = new ContactMapper($pdo);
@@ -96,28 +118,8 @@ class ContactMapperTest extends \PHPUnit_Framework_TestCase
      */
     public function testUpdatingExistingContact()
     {
-        $testData = new \stdClass();
-        $testData->contact_id = 1;
-        $testData->name = 'Foo';
-        $testData->address = 'Foo Bar 123';
-        $testData->zip = '12345';
-        $testData->city = 'Baz';
-        $testData->country = 'AN';
-        $testData->email = 'foo@bar.baz';
-        $testData->phone = '+1234567890';
-        $testData->mobile = '+9876543210';
-
-        $pdoStmt = $this->getMockBuilder('\\PDOStatement')
-            ->setMethods(array ('execute'))
-            ->getMock();
-        $pdoStmt->method('execute')
-            ->will($this->returnValue(true));
-        $pdo = $this->getMockBuilder('\\PDO')
-            ->setMethods(array ('prepare'))
-            ->setConstructorArgs(array ('sqlite::memory:'))
-            ->getMock();
-        $pdo->method('prepare')
-            ->will($this->returnValue($pdoStmt));
+        $testData = $this->generateEntry(false);
+        $pdo = $this->generateMockPDO(array ('execute' => true));
 
         $contact = new Contact($testData);
         $contactMapper = new ContactMapper($pdo);
