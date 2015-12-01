@@ -70,26 +70,27 @@ class ContactMapperTest extends \PHPUnit_Extensions_Database_TestCase
         unlink ($filename);
         return $dataSet;
     }
-/**
- * @covers In2it\Phpunit\Model\ContactMapper::fetchAll
- */
-public function testFetchAllRowsFromContact()
-{
-    // Let's count entries from our database
-    $expectedCount = $this->getConnection()->getRowCount('contact');
 
-    // Now we use our logic to retrieve the data from the database
-    $contactMapper = new ContactMapper($this->pdo);
-    $result = $contactMapper->fetchAll();
+    /**
+     * @covers In2it\Phpunit\Model\ContactMapper::fetchAll
+     */
+    public function testFetchAllRowsFromContact()
+    {
+        // Let's count entries from our database
+        $expectedCount = $this->getConnection()->getRowCount('contact');
 
-    // We verify we have the same row count
-    $actualCount = count($result);
-    $this->assertSame($expectedCount, $actualCount);
+        // Now we use our logic to retrieve the data from the database
+        $contactMapper = new ContactMapper($this->pdo);
+        $result = $contactMapper->fetchAll();
 
-    // Let's verify the data matches
-    $actualDataSet = $this->parseXMLDataSet($result, 'contact');
-    $expectedDataSet = $this->createFlatXMLDataSet(__DIR__ . '/_files/fetchall-dataset.xml');
-    $this->assertDataSetsEqual($expectedDataSet, $actualDataSet);
-}
+        // We verify we have the same row count
+        $actualCount = count($result);
+        $this->assertSame($expectedCount, $actualCount);
+
+        // Let's verify the data matches
+        $actualDataSet = $this->parseXMLDataSet($result, 'contact');
+        $expectedDataSet = $this->createFlatXMLDataSet(__DIR__ . '/_files/fetchall-dataset.xml');
+        $this->assertDataSetsEqual($expectedDataSet, $actualDataSet);
+    }
 
 }
