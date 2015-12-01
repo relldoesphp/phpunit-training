@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+    <contact
+        contact_id="1"
+        name="John Doe"
+        address="1234 H Street SE"
+        zip="20003"
+        city="Washington D.C."
+        country="US"
+        email="john.doe@outlook.com"
+        phone="+12025559988"
+        mobile="+1234567890"/>
+    <contact
+        contact_id="2"
+        name="Steven Aerts"
+        address="Kerkstraat 34"
+        zip="2018"
+        city="Oelegem"
+        country="BE"
+        email="aerts.steven@telenet.be"
+        phone="+3233851414"
+        mobile="+32474222333"/>
+    <contact
+        contact_id="3"
+        name="Luke Skywalker"
+        address="41234 Speeder Road"
+        zip="2031432145"
+        city="Mos Eisly"
+        country="Tatooine"
+        email="luke.skywalker@jedi.net"
+        phone="+121131231432341341"
+        mobile="+12113123413999241"/>
+</dataset>

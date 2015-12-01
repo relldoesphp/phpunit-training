@@ -1,6 +1,7 @@
 <?php
 namespace In2it\Test\Phpunit\Model;
 
+use In2it\Phpunit\Model\Contact;
 use In2it\Phpunit\Model\ContactMapper;
 use PHPUnit_Extensions_Database_DataSet_IDataSet;
 use PHPUnit_Extensions_Database_DB_IDatabaseConnection;
@@ -93,4 +94,22 @@ class ContactMapperTest extends \PHPUnit_Extensions_Database_TestCase
         $this->assertDataSetsEqual($expectedDataSet, $actualDataSet);
     }
 
+    public function testContactCanBeAddedToDatabase()
+    {
+        $contact = new Contact();
+        $contact->setName('Luke Skywalker')
+            ->setAddress('41234 Speeder Road')
+            ->setCity('Mos Eisly')
+            ->setZip(2031432145)
+            ->setCountry('Tatooine')
+            ->setEmail('luke.skywalker@jedi.net')
+            ->setPhone(+121131231432341341)
+            ->setMobile(+12113123413999241);
+        $contactMapper = new ContactMapper($this->pdo);
+        $contactMapper->save($contact->toArray());
+
+        $actualDataSet = $this->getConnection()->createDataSet();
+        $expectedDataSet = $this->createFlatXMLDataSet(__DIR__ . '/_files/insert-dataset.xml');
+        $this->assertDataSetsEqual($expectedDataSet, $actualDataSet);
+    }
 }
