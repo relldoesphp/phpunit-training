@@ -21,5 +21,8 @@
     "psr-4": {
       "In2it\\Test\\Phpunit\\": "tests/"
     }
+  },
+  "require": {
+    "twilio/sdk": "^4.6"
   }
 }
