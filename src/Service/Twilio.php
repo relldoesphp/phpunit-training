@@ -45,49 +45,51 @@ class Twilio
      */
     public function sendMessage(array $recipients, $message)
     {
+        $statusMessages = array ();
         foreach ($recipients as $recipient) {
             try {
-                $this->client->account->messages->createMessage(
+                $this->client->account->messages->sendMessage(
                     $this->number,
                     $recipient,
                     $message
                 );
-                return 'Message sent to ' . $recipient . PHP_EOL;
+                $statusMessages[] = 'Message sent to ' . $recipient;
             } catch (\Services_Twilio_RestException $e) {
-                return 'Could not send message to ' . $recipient . ': '
-                    . $e->getMessage() . PHP_EOL;
+                $statusMessages[] = 'Could not send message to '
+                    . $recipient . ': ' . $e->getMessage();
             }
         }
+        return implode(PHP_EOL, $statusMessages);
     }
 
-    /**
-     * Reads all messages, grouped by type. Returns an array of messages
-     * or a failure message.
-     *
-     * @return string|array
-     */
-    public function readMessages()
-    {
-        $messages = array ();
-        try {
-            $messages = $this->client->account->messages;
-        } catch (\Services_Twilio_RestException $e) {
-            return 'Cannot retrieve SMS list: ' . $e->getMessage() . PHP_EOL;
-        }
-        $filteredMessages = array ();
-        foreach ($messages as $message) {
-            if (0 === strcmp($this->number, $message->from)) {
-                $filteredMessages[self::MSG_OUTBOUND][] = 'Outgoing message "'
-                    . $message->body . '" to ' . $message->to;
-            } elseif (0 === strcmp($this->number, $message->to)) {
-                $filteredMessages[self::MSG_INBOUND][] = 'Incoming message "'
-                    . $message->body . '" from ' . $message->from;
-            } else {
-                $filteredMessages[self::MSG_ALL][] = 'Message "'
-                    . $message->body . '" from ' . $message->from
-                    . ' to ' . $message->to;
-            }
-        }
-        return $filteredMessages;
+/**
+ * Reads all messages, grouped by type. Returns an array of messages
+ * or a failure message.
+ *
+ * @return string|array
+ */
+public function readMessages()
+{
+    $messages = array ();
+    try {
+        $messages = $this->client->account->messages;
+    } catch (\Services_Twilio_RestException $e) {
+        return 'Cannot retrieve SMS list: ' . $e->getMessage() . PHP_EOL;
     }
+    $filteredMessages = array ();
+    foreach ($messages as $message) {
+        if (0 === strcmp($this->number, $message->from)) {
+            $filteredMessages[self::MSG_OUTBOUND][] = 'Outgoing message "'
+                . $message->body . '" to ' . $message->to;
+        } elseif (0 === strcmp($this->number, $message->to)) {
+            $filteredMessages[self::MSG_INBOUND][] = 'Incoming message "'
+                . $message->body . '" from ' . $message->from;
+        } else {
+            $filteredMessages[self::MSG_ALL][] = 'Message "'
+                . $message->body . '" from ' . $message->from
+                . ' to ' . $message->to;
+        }
+    }
+    return $filteredMessages;
+}
 }
