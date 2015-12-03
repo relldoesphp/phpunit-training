@@ -97,4 +97,30 @@ class TwilioTest extends \PHPUnit_Framework_TestCase
             $result
         );
     }
+
+    /**
+     * @covers \In2it\Phpunit\Service\Twilio::readMessages
+     * @expectedException \Services_Twilio_RestException
+     */
+    public function testReadingMessagesTriggersException()
+    {
+        $client = new \stdClass();
+        $url = 'http://example.com';
+
+        $twilioRestMessages = $this->getMockBuilder('Services_Twilio_Rest_Messages')
+            ->setMethods(array ('getPage'))
+            ->setConstructorArgs(array ($client, $url))
+            ->setMockClassName('Mock_Services_Twilio_Rest_' . uniqid() . '_Messages')
+            ->getMock();
+
+        $twilioRestMessages->expects($this->once())
+            ->method('getPage')
+            ->willThrowException(new \Services_Twilio_RestException(400, 'Error'));
+
+        $twilio = $this->generateMockTwilioClient($twilioRestMessages);
+        $result = $twilio->readMessages();
+
+        $this->assertEquals('Cannot retrieve SMS list: Error', trim($result));
+        $this->markTestSkipped('Cannot replace the message instance without leakin to Twilio API');
+    }
 }
