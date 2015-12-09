@@ -34,8 +34,8 @@ class Example extends PHPUnit_Extensions_SeleniumTestCase
     $this->type("id=password", $password);
     $this->click("id=signin");
     $this->waitForPageToLoad("30000");
-    $this->assertEquals("'" + $email + "' is not a valid email address in the basic format local-part@hostname", $this->getText("xpath=//ul[@class=\"errors\"]/li[1]"));
-    $this->assertEquals("'" + $email + "' is less than 5 characters long", $this->getText("xpath=//ul[@class=\"errors\"]/li[2]"));
+    $this->assertEquals("'" . $email . "' is not a valid email address in the basic format local-part@hostname", $this->getText("xpath=//ul[@class=\"errors\"]/li[1]"));
+    $this->assertEquals("'" . $email . "' is less than 5 characters long", $this->getText("xpath=//ul[@class=\"errors\"]/li[2]"));
   }
 
   public function testFailedLoginWithWrongEmail()
