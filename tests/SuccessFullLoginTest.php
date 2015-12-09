@@ -7,7 +7,7 @@ class Example extends PHPUnit_Extensions_SeleniumTestCase
     $this->setBrowserUrl("http://theialive.azurewebsites.net/");
   }
 
-  public function testMyTestCase()
+  public function testSuccessfulLogin()
   {
     $email = "promo@in2it.be";
     $password = "test1234";
@@ -21,6 +21,49 @@ class Example extends PHPUnit_Extensions_SeleniumTestCase
     $this->assertEquals("TheiaLive | Your current projects", $this->getTitle());
     $this->click("link=sign off");
     $this->waitForPageToLoad("30000");
+  }
+
+  public function testLoginWithBogusCredentials()
+  {
+    $email = "foo";
+    $password = "bar";
+    $this->open("/");
+    $this->click("link=login");
+    $this->waitForPageToLoad("30000");
+    $this->type("id=email", $email);
+    $this->type("id=password", $password);
+    $this->click("id=signin");
+    $this->waitForPageToLoad("30000");
+    $this->assertEquals("'" + $email + "' is not a valid email address in the basic format local-part@hostname", $this->getText("xpath=//ul[@class=\"errors\"]/li[1]"));
+    $this->assertEquals("'" + $email + "' is less than 5 characters long", $this->getText("xpath=//ul[@class=\"errors\"]/li[2]"));
+  }
+
+  public function testFailedLoginWithWrongEmail()
+  {
+    $email = "foo@bar.com";
+    $password = "bar";
+    $this->open("/");
+    $this->click("link=login");
+    $this->waitForPageToLoad("30000");
+    $this->type("id=email", $email);
+    $this->type("id=password", $password);
+    $this->click("id=signin");
+    $this->waitForPageToLoad("30000");
+    $this->assertEquals("Invalid username and/or password provided", $this->getText("xpath=//ul[@class=\"errors\"]/li[1]"));
+  }
+
+  public function testFailedLoginWithWrongPassword()
+  {
+    $email = "promo@in2it.be";
+    $password = "bar";
+    $this->open("/");
+    $this->click("link=login");
+    $this->waitForPageToLoad("30000");
+    $this->type("id=email", $email);
+    $this->type("id=password", $password);
+    $this->click("id=signin");
+    $this->waitForPageToLoad("30000");
+    $this->assertEquals("Invalid username and/or password provided", $this->getText("xpath=//ul[@class=\"errors\"]/li[1]"));
   }
 }
 ?>
